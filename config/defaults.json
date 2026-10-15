@@ -1,0 +1,14 @@
+{
+  "conda_env": "douyin-qwen-asr",
+  "asr_model": "Qwen/Qwen3-ASR-1.7B",
+  "forced_aligner_model": "Qwen/Qwen3-ForcedAligner-0.6B",
+  "language": "Chinese",
+  "timestamps": "auto",
+  "model_weights_dir": "F:\\Model-weights",
+  "asr_model_path": "F:\\Model-weights\\Qwen3-ASR-1.7B",
+  "forced_aligner_model_path": "F:\\Model-weights\\Qwen3-ForcedAligner-0.6B",
+  "vision_model_path": "F:\\Model-weights\\Qwen3-VL-2B-Instruct",
+  "hf_cache": "F:\\Model-weights",
+  "obsidian_vault_path": "E:\\Obsidian-projects\\SecondBrain_Vault\\SecondBrain_Vault",
+  "obsidian_write_mode": "vault_root"
+}

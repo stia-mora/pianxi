@@ -1,0 +1,18 @@
+services:
+  pianxi:
+    build: .
+    restart: unless-stopped
+    init: true
+    shm_size: 512mb
+    ports:
+      - "127.0.0.1:${PIANXI_PORT:-8765}:8765"
+    environment:
+      PIANXI_HTTPS: "${PIANXI_HTTPS:-0}"
+      PIANXI_ALLOW_FAKE_IP: "${PIANXI_ALLOW_FAKE_IP:-0}"
+    volumes:
+      - pianxi-data:/app/data
+      - ./server-secrets:/run/pianxi-secrets:ro
+    stop_grace_period: 30s
+
+volumes:
+  pianxi-data:

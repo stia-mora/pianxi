@@ -1,0 +1,4 @@
+# Replace with the actual domain; point its DNS at this server first.
+pianxi.example.com {
+    reverse_proxy 127.0.0.1:8765
+}
