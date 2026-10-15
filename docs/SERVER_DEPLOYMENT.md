@@ -4,6 +4,8 @@
 
 适用于 Ubuntu 24.04 / Debian 12 等 Linux 主机，Docker Engine + Compose v2。推荐至少 2 核、4 GB 内存、30 GB 可用磁盘。采用已有云端视觉 API 和云端 ASR，无需 NVIDIA GPU、Conda 或本地模型权重。Docker 镜像包含前端、后端、FFmpeg、Chromium；旧的 Windows 命令行脚本也保留在源码中。
 
+云端模式会把音频交给 ASR 服务、把文案和代表帧交给视觉 API。当前云端 ASR 集成保留全文，不提供本地 ForcedAligner 的逐句对齐时间轴；报告会标注这一限制。若必须获得本地对齐时间戳，需要另行部署 GPU/本地语音模型环境。
+
 ## 1. 准备服务器
 
 先通过 Docker 官方说明安装 Engine 和 Compose 插件：
