@@ -11,3 +11,8 @@ The optional wx_channel companion is a separate application. Its proxy,
 certificate management, Windows executables and bundled third-party libraries
 are not copied into PIANXI. PIANXI calls its share-resolution API and implements
 bounded media download and decoding in Python.
+
+`deploy/wx-channel-local-auth.patch` and `deploy/wx-channel-mingw.patch` contain
+small compatibility changes against that separate checkout. They are applied
+by the operator when building the companion; they do not embed its executable
+or its third-party driver DLLs in PIANXI.

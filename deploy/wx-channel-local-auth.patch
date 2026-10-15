@@ -1,0 +1,54 @@
+diff --git a/internal/handlers/script.go b/internal/handlers/script.go
+index b225a90..dc748aa 100644
+--- a/internal/handlers/script.go
++++ b/internal/handlers/script.go
+@@ -288,7 +288,14 @@ func (h *ScriptHandler) buildInjectedScripts(path string) string {
+ 	utilsScript := fmt.Sprintf(`<script>%s</script>`, string(h.utilsJS))
+ 
+ 	// API 客户端脚本 - 必须在其他脚本之前加载
+-	apiClientScript := fmt.Sprintf(`<script>%s</script>`, string(h.apiClientJS))
++	// Pass the configured credential before the page client opens its socket.
++	// JSON encoding also escapes HTML delimiters in administrator supplied values.
++	localToken := ""
++	if cfg := h.getConfig(); cfg != nil {
++		localToken = cfg.SecretToken
++	}
++	encodedToken, _ := json.Marshal(localToken)
++	apiClientScript := fmt.Sprintf(`<script>window.__WX_LOCAL_TOKEN__=%s;</script><script>%s</script>`, encodedToken, string(h.apiClientJS))
+ 
+ 	// 页面保活脚本 - 防止页面休眠
+ 	keepAliveScript := fmt.Sprintf(`<script>%s</script>`, string(h.keepAliveJS))
+diff --git a/internal/handlers/script_local_auth_test.go b/internal/handlers/script_local_auth_test.go
+new file mode 100644
+index 0000000..e310788
+--- /dev/null
++++ b/internal/handlers/script_local_auth_test.go
+@@ -0,0 +1,28 @@
++package handlers
++
++import (
++	"encoding/json"
++	"strings"
++	"testing"
++
++	"wx_channel/internal/config"
++)
++
++func TestInjectedClientReceivesEscapedLocalToken(t *testing.T) {
++	cfg := config.Get()
++	previous := cfg.SecretToken
++	t.Cleanup(func() { cfg.SecretToken = previous })
++	for _, token := range []string{"", "test-secret", `</script><script>alert("x")</script>`} {
++		cfg.SecretToken = token
++		h := &ScriptHandler{apiClientJS: []byte("window.clientStarted=true;")}
++		result := h.buildInjectedScripts("/web/pages/feed")
++		encoded, _ := json.Marshal(token)
++		expected := `<script>window.__WX_LOCAL_TOKEN__=` + string(encoded) + `;</script><script>window.clientStarted=true;</script>`
++		if !strings.Contains(result, expected) {
++			t.Fatal("local token must be safely assigned before the API client starts")
++		}
++		if token != "" && strings.Contains(token, "</script>") && strings.Contains(result, token) {
++			t.Fatal("unescaped token can terminate the script element")
++		}
++	}
++}
