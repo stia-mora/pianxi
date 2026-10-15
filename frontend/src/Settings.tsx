@@ -13,6 +13,7 @@ import {
 import { api, post } from "./api";
 import type { User } from "./types";
 import { ErrorNotice } from "./App";
+import WechatSettings from "./WechatSettings";
 type Config = {
   team_name: string;
   provider: string;
@@ -25,6 +26,8 @@ type Config = {
   asr_base_url: string;
   asr_model: string;
   has_asr_api_key: boolean;
+  wechat_bridge_url: string;
+  has_wechat_bridge_token: boolean;
 };
 export default function Settings({
   user,
@@ -353,6 +356,7 @@ export default function Settings({
           </section>
         </form>
       )}
+      {config && <WechatSettings initialUrl={config.wechat_bridge_url} hasToken={config.has_wechat_bridge_token} notify={notify} />}
       {config && (
         <section className="settings-section">
           <div className="settings-label">

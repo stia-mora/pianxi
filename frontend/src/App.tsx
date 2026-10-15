@@ -288,6 +288,7 @@ function Dashboard({
             <b>抖音</b>
             <b>哔哩哔哩</b>
             <b>YouTube</b>
+            <b>微信视频号</b>
           </div>
         </div>
         <form className="url-form" onSubmit={submit}>

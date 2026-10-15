@@ -18,6 +18,7 @@ PLATFORMS = {
     "b23.tv": "哔哩哔哩",
     "youtube.com": "YouTube",
     "youtu.be": "YouTube",
+    "weixin.qq.com": "微信视频号",
 }
 UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36"
 
@@ -39,7 +40,12 @@ def normalize_url(text):
     if parsed.username or parsed.password or parsed.port not in (None, 443, 80):
         raise ValueError("链接格式不受支持")
     if not any(host == d or host.endswith("." + d) for d in PLATFORMS):
-        raise ValueError("目前支持抖音、哔哩哔哩和 YouTube 视频链接")
+        raise ValueError("目前支持抖音、哔哩哔哩、YouTube 和微信视频号分享链接")
+    if host == "weixin.qq.com" or host.endswith(".weixin.qq.com"):
+        from .wechat import is_share_url
+
+        if not is_share_url(url):
+            raise ValueError("请复制微信视频号分享链接（weixin.qq.com/sph/ 或 channels.weixin.qq.com/finder-preview/pages/sph?id=…）")
     if "douyin.com" in host:
         match = re.search(r"/video/(\d+)", parsed.path)
         video_id = (
@@ -74,7 +80,7 @@ def platform(url):
     )
 
 
-def public_url(url):
+def public_url(url, *, platforms=None):
     p = urlparse(url)
     if p.scheme not in ("https", "http") or not p.hostname or p.username or p.password:
         raise ValueError("资源地址无效")
@@ -100,6 +106,10 @@ def public_url(url):
         "youtube.com",
         "ggpht.com",
     )
+    if platforms == "wechat":
+        cdns = ("finder.video.qq.com", "findermp.video.qq.com", "video.weixin.qq.com", "wxapp.tc.qq.com", "qpic.cn", "wx.qlogo.cn")
+        if p.scheme != "https" or p.port not in (None, 443):
+            raise ValueError("视频号媒体必须使用 HTTPS 标准端口")
     if not any(host == d or host.endswith("." + d) for d in cdns):
         raise ValueError("资源不在受支持平台的媒体域名中")
     for item in socket.getaddrinfo(
@@ -114,13 +124,13 @@ def public_url(url):
     return url
 
 
-def download_file(url, target, limit=config.MAX_BYTES):
+def download_file(url, target, limit=config.MAX_BYTES, *, headers=None, platforms=None):
     # Redirects are validated individually; no credentials are forwarded.
     with httpx.Client(
-        timeout=60, headers={"User-Agent": UA, "Referer": "https://www.douyin.com/"}
+        timeout=60, headers={"User-Agent": UA, "Referer": "https://www.douyin.com/", **(headers or {})}
     ) as client:
         for _ in range(6):
-            public_url(url)
+            public_url(url, platforms=platforms)
             with client.stream("GET", url) as response:
                 if response.is_redirect:
                     from urllib.parse import urljoin
@@ -225,6 +235,10 @@ class QuietLogger:
 
 
 def collect(url, folder):
+    if platform(url) == "微信视频号":
+        from . import wechat
+
+        return wechat.collect(url, folder)
     metadata = None
     warnings = []
     resolved_url = resolve_short_url(url)

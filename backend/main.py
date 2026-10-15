@@ -231,6 +231,8 @@ def settings(current=Depends(security.admin)):
         "asr_base_url": s.get("asr_base_url", "https://api.siliconflow.cn/v1"),
         "asr_model": s.get("asr_model", "XingChenAGI/XingChenASR-V3.2-Ultra"),
         "has_asr_api_key": bool(s.get("asr_api_key")),
+        "wechat_bridge_url": s.get("wechat_bridge_url", ""),
+        "has_wechat_bridge_token": bool(s.get("wechat_bridge_token")),
         "local_model": "Qwen3-VL-2B-Instruct",
         "cookies": {
             p: bool(collector.cookie_path(url))
@@ -462,6 +464,36 @@ def test_asr_settings(current=Depends(security.admin)):
 class CookiesInput(BaseModel):
     platform: str
     content: str = Field(min_length=1, max_length=100000)
+
+
+class WechatSettingsInput(BaseModel):
+    url: str = Field(default="", max_length=500)
+    token: str | None = Field(default=None, max_length=2000, pattern=r"^[^\r\n]*$")
+
+
+@app.put("/api/settings/wechat")
+def update_wechat_settings(data: WechatSettingsInput, current=Depends(security.admin)):
+    from . import wechat
+
+    try:
+        url = wechat.bridge_url(data.url)
+    except ValueError as exc:
+        raise HTTPException(400, str(exc))
+    values = {"wechat_bridge_url": url}
+    if data.token is not None:
+        values["wechat_bridge_token"] = data.token
+    store.save_settings(values)
+    return {"ok": True}
+
+
+@app.post("/api/settings/test-wechat")
+def test_wechat_settings(current=Depends(security.admin)):
+    from . import wechat
+
+    try:
+        return wechat.test_connection()
+    except ValueError as exc:
+        return {"ok": False, "message": str(exc)}
 
 
 @app.put("/api/settings/cookies")

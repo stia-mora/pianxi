@@ -18,6 +18,7 @@ RUN pip install --no-cache-dir -r requirements-platform-lock.txt \
     && useradd --uid 10001 --create-home pianxi \
     && mkdir -p /app/data/cookies && chown -R pianxi:pianxi /app/data /opt/playwright
 COPY backend/ ./backend/
+COPY third_party/ ./third_party/
 COPY scripts/*.py ./scripts/
 COPY --from=frontend /build/dist ./frontend/dist/
 COPY deploy/entrypoint.sh /usr/local/bin/pianxi-entrypoint

@@ -1879,6 +1879,23 @@ details[open] > summary > svg {
 .settings-fields > .secondary {
   align-self: flex-start;
 }
+
+.settings-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.settings-fields .checkbox-label {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
+.checkbox-label input[type="checkbox"] {
+  width: auto;
+  min-height: auto;
+  margin: 0;
+}
 .provider-options {
   display: flex;
   gap: 12px;

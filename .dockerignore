@@ -6,6 +6,8 @@
 !deploy/
 !deploy/entrypoint.sh
 !requirements-platform*.txt
+!third_party/
+!third_party/*
 !frontend/
 !frontend/package.json
 !frontend/package-lock.json

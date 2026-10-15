@@ -16,6 +16,7 @@ from backend import collector, config, store
 SETTING_KEYS = {
     "team_name", "provider", "base_url", "model", "api_key",
     "asr_provider", "asr_base_url", "asr_model", "asr_api_key",
+    "wechat_bridge_url", "wechat_bridge_token",
 }
 COOKIE_PLATFORMS = ("抖音", "YouTube", "哔哩哔哩")
 

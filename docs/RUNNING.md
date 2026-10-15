@@ -35,6 +35,8 @@ powershell -ExecutionPolicy Bypass -File scripts\stop_platform.ps1
 
 ## 采集与分析
 
+微信视频号通过 `wx_channel` 页面会话连接下载，需管理员在系统设置配置采集器，详见 [视频号接入指南](WECHAT_CHANNELS.md)。
+
 链接 → 平台详情/评论 → 下载视频 → 封面/抽帧/音频 → 语音转写 → 视觉与文案分析 → 团队报告。
 
 输入框支持直接粘贴链接、抖音 `v.douyin.com` 短链，或包含链接的完整分享文案/Markdown 链接。系统会识别文案中的第一个受支持视频链接；短链先解析正式地址，报告同时保留原始分享文案来源。

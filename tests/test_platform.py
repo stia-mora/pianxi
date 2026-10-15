@@ -426,3 +426,29 @@ def test_cookies_saved_to_persistent_directory(client):
     path = collector.cookie_path("https://www.douyin.com/video/123")
     assert path == config.COOKIE_DIR / "douyin_cookies.txt"
     assert path.read_text(encoding="utf-8") == text
+
+
+def test_wechat_settings_are_admin_only_and_token_is_hidden(client):
+    login(client, "member")
+    assert client.put("/api/settings/wechat", json={"url": "http://127.0.0.1:2025"}).status_code == 403
+    assert client.post("/api/settings/test-wechat").status_code == 403
+    client.post("/api/auth/logout")
+    login(client)
+    assert client.put("/api/settings/wechat", json={"url": "http://127.0.0.1:2025", "token": "bridge-secret"}).status_code == 200
+    settings = client.get("/api/settings")
+    assert settings.json()["has_wechat_bridge_token"] is True
+    assert "bridge-secret" not in settings.text
+    client.put("/api/settings/wechat", json={"url": "https://bridge.example"})
+    assert store.setting("wechat_bridge_token") == "bridge-secret"
+    assert client.put("/api/settings/wechat", json={"url": "http://evil.example"}).status_code == 400
+    client.put("/api/settings/wechat", json={"url": "", "token": ""})
+    assert client.get("/api/settings").json()["has_wechat_bridge_token"] is False
+
+
+def test_wechat_job_uses_existing_queue(client):
+    login(client)
+    response = client.post("/api/jobs", json={"url": "https://weixin.qq.com/sph/test_123"})
+    assert response.status_code == 202
+    job = client.get("/api/jobs/" + response.json()["id"]).json()
+    assert job["status"] == "queued"
+    assert job["url"] == "https://weixin.qq.com/sph/test_123"
